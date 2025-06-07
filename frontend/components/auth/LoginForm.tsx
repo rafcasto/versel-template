@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from './AuthProvider';
+import { useRecaptcha } from '@/lib/hooks/useRecaptcha';
 import { loginSchema, LoginFormData } from '@/lib/utils/validators';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { Shield } from 'lucide-react';
 
 interface AuthError {
   message: string;
@@ -19,6 +21,7 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuth();
+  const { executeRecaptchaAction, isRecaptchaAvailable } = useRecaptcha();
 
   const {
     register,
@@ -33,7 +36,24 @@ export function LoginForm() {
     setError(null);
 
     try {
+      // Execute reCAPTCHA
+      let recaptchaToken: string | null = null;
+      if (isRecaptchaAvailable) {
+        recaptchaToken = await executeRecaptchaAction('login');
+        if (!recaptchaToken) {
+          throw new Error('reCAPTCHA verification failed. Please try again.');
+        }
+      }
+
+      // Proceed with login - you can send recaptchaToken to your backend for verification
       await login(data.email, data.password);
+      
+      // Optional: Verify reCAPTCHA token with your backend
+      if (recaptchaToken) {
+        console.log('reCAPTCHA token generated for login:', recaptchaToken);
+        // You can send this token to your backend API for verification
+      }
+
       router.push('/dashboard');
     } catch (err) {
       const error = err as AuthError;
@@ -96,6 +116,16 @@ export function LoginForm() {
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
           </form>
+
+          {/* reCAPTCHA Status */}
+          <div className="flex items-center justify-center text-xs text-gray-500">
+            <Shield className="w-3 h-3 mr-1" />
+            {isRecaptchaAvailable ? (
+              <span>Protected by reCAPTCHA</span>
+            ) : (
+              <span>reCAPTCHA not available</span>
+            )}
+          </div>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

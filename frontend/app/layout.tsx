@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+import { RecaptchaProvider } from '@/lib/recaptcha/provider';
 import { Header } from '@/components/layout/Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Firebase Auth App',
-  description: 'Next.js app with Firebase authentication',
+  description: 'Next.js app with Firebase authentication and reCAPTCHA',
 };
 
 export default function RootLayout({
@@ -19,12 +20,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Header />
-            <main>{children}</main>
-          </div>
-        </AuthProvider>
+        <RecaptchaProvider>
+          <AuthProvider>
+            <div className="min-h-screen bg-gray-50">
+              <Header />
+              <main>{children}</main>
+            </div>
+          </AuthProvider>
+        </RecaptchaProvider>
       </body>
     </html>
   );
