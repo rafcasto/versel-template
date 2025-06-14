@@ -4,7 +4,8 @@ import './globals.css';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { RecaptchaProvider } from '@/lib/recaptcha/provider';
 import { Header } from '@/components/layout/Header';
-
+import Script from 'next/script';
+import {GA_TRACKING_ID} from '../lib/utils/analytics'
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -28,6 +29,18 @@ export default function RootLayout({
             </div>
           </AuthProvider>
         </RecaptchaProvider>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_TRACKING_ID}');
+          `}
+        </Script>
       </body>
     </html>
   );
